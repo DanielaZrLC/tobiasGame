@@ -16,118 +16,102 @@ canvas{
   #container{
     display: flex;
     flex-wrap: wrap;
-    flex-direction: column;
-    justify-content: center;
-    align-content: center;
-    align-items: center;
+    flex-direction: row;
   }
   
   #header{
+    display: flex;
+    justify-content: center;
     background-color: none;
     border: none;
-    height: 10vh;
-    width: 50%;
-    color: white;
-    align-content: center;
+    height: 15vh;
+    width: 100%;
   }
+
+ #header img{
+    display: flex;
+    width: 280px;
+    height: 200px;
+    position: relative;
+    justify-content: space-between;
+    align-content: center;
+ }
+
+ #header p{
+     display: flex;
+     float: center;
+     font-size: 2 em;
+     font-family: 'Permanent Marker';
+     color: white;
+ }
   
   #main{
     display: flex;
+    justify-content: space-around;
     flex-wrap: wrap;
     flex-direction: row;
-    font-family: 'Gloria Hallelujah', cursive;
+    align-content: center;
     background-color: none;
     border: 1px ;
     height: 70%;
     width: 100vw;
   }
-  
   #myCanvas{
     width: auto;
-    margin: 200 auto;
+    margin: 0 auto;
     position: 50% vw;
+  }
+
+  #players{
+    display: flex;
+    justify-content: right;
+    flex-direction: column;
   }
   
   #footer{
     display: flex;
     flex-wrap: wrap;
     flex-direction: row;
-    justify-content: space-between;
-    align-content: flex-end;
+    justify-content: center;
+    align-content: center;
     align-items: center;
     border-radius: 20px;
     background-color:rgb(24, 24, 24);
     border: 1px solid rgb(24, 24, 24);
-    height: 10vh;
+    height: 6vh;
     width: 50%;
-  }
-  
-  #info{
-    font-size: 2em;
-    color: white;
-  }
-  #Instructions{
-      display: flex;
-      flex-wrap: wrap;
-      flex-direction: column;
-      align-content: center;
-      color: white;
-      height: 80px;
-      width: 150px;
-      font-size: 1.5em;
-      text-align: center;
-      background-color: #DAA930;
-      font-family: 'Gloria Hallelujah', cursive;
-      border-radius: 20px;
-
-  }
-  #myDiv{
-      display: flex;
-      background-color: gray;
-      flex-direction: column;
-      font-size: 1.5em;
-      flex-wrap: wrap;
-      align-items: center;
-      color: white;
-      font-family:'Patrick Hand', cursive;
-  }
-
-  #myStory{
-    display: flex;
-    background-color: gray;
-    flex-direction: column;
-    font-size: 1.5em;
-    flex-wrap: wrap;
-    align-items: center;
-    color: white;
-    font-family:'Patrick Hand', cursive;
-}
-
-  #texto-logo{
-      font-size: 2em;
-      font-family:'Permanent Marker';
-      color: white;
-      position: 80px 100px;
   }
   
   .action-button
   {
+    background-color: #1d1d1d;
       position: center;
       padding: 10px 40px;
       margin: 0px 200px 150px 0px;
       float: left;
       border-radius: 10px;
-      font-family: 'Gloria Hallelujah', cursive;
-      font-size: 18px;
-      color: #FFF;
-      text-decoration: none;	
+      font-family: 'Press Start 2P';
+      color: rgb(216, 203, 18);
+      font-size: 13px;
+      text-decoration: none;
   }
   
-  .red
+  .player1
   {
-      background-color: #e68d19;
-      border-bottom: 5px solid #eb790f;
+      border-bottom: 5px solid #080808;
       text-shadow: 0px -2px #363636;
+  }
+  .player2
+  {
+      border-bottom: 5px solid #080808;
+      text-shadow: 0px -2px #363636;
+  }
+  .startButton
+  {
+      background-color: #1d1d1d;
+      border-bottom: 5px solid #080808;
+      text-shadow: 0px -2px #363636;
+      color: rgb(216, 203, 18);
   }
   
   .action-button:active
@@ -136,10 +120,35 @@ canvas{
     -webkit-transform: translate(0px,5px);
       border-bottom: 1px solid;
   }
+  #text{
+      color: white;
+      font-size: 2em;
+      font-family: 'Gloria Hallelujah', cursive;
 
-  #logo {
-      width: 250px;
-      height: 200px;
-      font-family:'Permanent Marker';
-      font-size:100px;
   }
+/*  .menu{
+    position: absolute;
+    top:0;
+    left: 0;
+    background: yellow;
+    width: 230px;
+    height: 100%;
+    transition:all 1.5s ease;
+}
+.push{
+    padding-left: 250px;
+}
+.oculta{
+    transform: translateX(-230px);
+}
+
+.menu li{
+    padding: 20px;
+    background: rgba(0,0,0,0.5);
+    list-style: none;
+    color:white;
+    transition:all .5s ease;
+}
+.menu li:hover{
+    background: rgba(0,0,0,0.7);
+}

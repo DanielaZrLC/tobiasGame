@@ -1,7 +1,7 @@
     //canvas
     let canvas = document.getElementById ('myCanvas')
     let ctx = canvas.getContext ('2d')
-
+    let startButton = canvas.getElementsByClassName("action-button shadow animate startButton")
     //globals//
     let health = document.getElementById("health")
 
@@ -69,6 +69,7 @@
             this.image.src = imageBoard.bg
             this.image.onload = function(){
                 this.draw();
+
             }.bind(this)
         }
         draw() {
@@ -76,6 +77,32 @@
             ctx.fillStyle = "white";
             ctx.font = '50px Avenir';
             ctx.fillText(Math.floor(frames / 60), this.width -100, 50)
+        }
+    }
+    
+    class Stone2{
+        constructor(){
+            this.x = 500;
+            this.y = 350;
+            this.width = 50;
+            this.height = 50;
+            this.image = new Image ();
+            this.image.src = imageSets.stone2
+            this.image.onload = function(){
+                this.draw();
+
+            }.bind(this)
+        }
+        draw() {
+            ctx.drawImage(this.image, this.x,this.y,this.width,this.height)
+        }
+        checkCollison(hero) {
+            if(this.checkIfTouch(hero)){
+                hero.x+= (this.velX * -.5) //cambiar con valores enemies
+                hero.y+= (this.velY * -.5)
+                hero.velX = this.velX  * -.1
+                hero.velY = this.velY * -.1
+            }
         }
     }
 
@@ -113,9 +140,7 @@
                 this.y < obstacle.y + obstacle.height &&
                 this.y + this.height > obstacle.y
             );
-        }
-
-        
+        }  
     }
 
     class Enemy{
@@ -182,22 +207,38 @@
         }
     }
 
-    class Items {
+    class Potion {
         constructor(){
-            this.x = 0;
-            this.y = 0;
+            this.x = canvas.width / 2;
+            this.y = canvas.height / 2;
             this.width = 20;
             this.height = 20;
             this.image = new Image ()
-            this.image.src = imageItems.bomb
+            this.image.src = imageItems.potionBlue
             this.image.onload = this.draw.bind(this)
         }
         draw(){
             //abajo
-            if (this.y < canvas.height-this.height) this.y +=2
+            //if (this.y < canvas.height-this.height) this.y +=2
             ctx.drawImage(this.image, this.x, this.y, this.width, this.height)
         }
         }
+        class Bomb {
+            constructor(){
+                this.x = 200;
+                this.y = 250;
+                this.width = 20;
+                this.height = 20;
+                this.image = new Image ()
+                this.image.src = imageItems.bomb
+                this.image.onload = this.draw.bind(this)
+            }
+            draw(){
+                //abajo
+                //if (this.y < canvas.height-this.height) this.y +=2
+                ctx.drawImage(this.image, this.x, this.y, this.width, this.height)
+            }
+            }
         
 
 
@@ -205,10 +246,15 @@
     let fondo = new Board()
     let tobias = new Hero()
     let enemies = new Enemy()
+    let potion = new Potion()
+    let bomb = new Bomb()
+    let stone = new Stone2()
+
 
 
     //main functions
     function start (){
+        startButton()
         interval = setInterval (update, 1000/60)
     }
 
@@ -248,6 +294,9 @@
         generateEnemy()
         drawEnemy()
         enemies.draw()
+        potion.draw()
+        bomb.draw()
+        stone.draw()
         
         setTimeout(update, 10);
     }
