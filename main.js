@@ -16,7 +16,6 @@ let interval,
     level = []
     maxSize = []
     monster1 = []
-    monster2 = []
 
 //images
 let imageBoard ={
@@ -286,7 +285,7 @@ function checkCollisonEnemy(){
 function generateEnemy(){
     if(!(frames%100===0) ) return;
     let enemX = new Enemy();
-    monster1.push(enemY);
+    monster1.push(enemX);
     enemX.image1.src = imageEnem.index
     enemX.x = canvas.width -100
     generateBullet(enemX)
