@@ -4,7 +4,6 @@ let ctx = canvas.getContext ('2d')
 
 //globals//
 let health = document.getElementById("health")
-health.value -= 10
 
 let interval,
     index,
@@ -13,6 +12,11 @@ let interval,
     friction = 0.98,
     keys = [];
     potionblue = []
+    enemies = []
+    level = []
+    maxSize = []
+    monster1 = []
+    monster2 = []
 
 //images
 let imageBoard ={
@@ -74,7 +78,7 @@ class Board{
     }
 }
 
-    class Hero{
+class Hero{
     constructor(){
         this.which = true;
         this.width = 40;
@@ -90,6 +94,7 @@ class Board{
         this.image2.src = imageHero[index].img2;
         this.image3 = new Image();
         this.image3.src = imageHero[index].img3;
+        this.health = 10;
     }
     draw(){
         let img = this.which ? this.image:this.image2;
@@ -109,7 +114,7 @@ class Board{
     }
 }
 
-class Enemies{
+class Enemy{
     constructor(){
     this.which = true;
         this.width = 50;
@@ -136,7 +141,7 @@ class Enemies{
     shootNrunAway (){
         this.x-=5;
     }
-    checkIfTouch(obstacle){
+    checkIfTouch(item){
         return (
             this.x < obstacle.x + obstacle.width &&
             this.x + this.width > obstacle.x &&
@@ -147,34 +152,17 @@ class Enemies{
 }
 
 class Bullet {
-    constructor(character) {
-      this.width = 15;
-      this.height = 15;
-      this.x = character.x + (character.width/2) - (this.width / 2);
-      console.log(character.x);
-      this.y = character.y //- this.height;
-      console.log(character.y);
-      console.log(this.height );
-      console.log(this.y);
-      this.vX = -10;
-      this.image = new Image();
-      index = Math.floor(Math.random() * enemiesBullets.length)
-        this.image.src = enemiesBullets[index].fire1;
-        this.image2 = new Image();
-        this.image2.src = enemiesBullets[index].fire2;
-        this.image3 = new Image();
-        this.image3.src = enemiesBullets[index].fire3;
-        this.image.onload = function(){
-        this.draw();
-      }.bind(this);
-    }
-    draw() {
-      this.x += this.vX;
-      ctx.drawImage(this.image,this.x,this.y, this.width, this.height)
+    constructor(){
+        this.x= 0
+        this.y = 0
+        this.width = 15
+        this.height = 15
+        this.image = new Image ()
+        this.image.src = imageItems. 
     }
 }
 
-    class Items {
+class Items {
     constructor(){
         this.x = 0;
         this.y = 0;
@@ -190,23 +178,13 @@ class Bullet {
         ctx.drawImage(this.image, this.x, this.y, this.width, this.height)
     }
     }
-/*
-class imageSets{
-    constructor(){
-        this.x = 2
-        this.y = 2
-        this.width = 25
-        this.height = 25
-        this.image = new Image();
-        this.image.src = imageSets.wall
-    }
-*/
+    
 
 
 //instancias
 let fondo = new Board()
 let tobias = new Hero()
-let enemies = new Enemies()
+let enemies = new Enemy()
 
 
 //main functions
@@ -217,6 +195,8 @@ function start (){
 function update(){
     ctx.clearRect(0,0,canvas.width, canvas.height)
     frames++
+
+    
 
     if (keys[38]) {
         if (tobias.velY > -speed) {
@@ -238,6 +218,8 @@ function update(){
             tobias.velX--;
         }
     }    
+    checkCollisonHero()
+
     ctx.clearRect(0, 0, 700, 500);
     updatePlayer(tobias);
     
@@ -245,26 +227,16 @@ function update(){
 }
 
 function gameOver(){
-    clearInterval(interval)
+
+    clearIntervalº(interval)
+    // clearCanvas()
     ctx.font = "VT323 150px"
     ctx.fillStyle = "black"
     ctx.fillText ("GAME OVER", 380,300)
     ctx.fillText ("Press enter to restart", 380,400)
 }
 
-/*
-player.fire = function () {
-    if (nextShootTime < currentTime || currentTime == 0) {
-        shot = new Shot(this, player.posX + 45, player.posY + 23, 5);
-        shot.add();
-        currentTime += shotDelay;
-        nextShootTime = currentTime + shotDelay;
-    } else {
-        currentTime = new Date().getTime();
-    }
-    return player
-}
-*/
+
 
 //
 function updatePlayer(player) {
@@ -284,60 +256,46 @@ function updatePlayer(player) {
     } else if (player.y <= 40) {
         player.y = 40;
     }
+    if (keydown.space) {
+        player.shoot();
+    }
     fondo.draw()
     player.draw()
     enemies.draw()
 }
 
 //auxiliar functions
-
-function generateEnemies(){
-    let times = [200,300] //verificar valores
-    let i = Math.floor(Math.random()* times.length)
-    if (frames % times[i] !== 0) return //este if dice que cada 100 milisegundos se generen las pipes
-    let height = Math.floor(Math.random() * 300) + 50 //300 altura máxima y 50 px altura mínima
-    let top  = new Enemies(height)
-    let y = height + 100
-    let height2 = canvas.height-y
-    let bottom = new Enemies(height2, y, false)
-    imageEnem.push(top)
-    imageEnem.push(bottom)
+function checkCollisonHero(){
+    if(tobias.checkIfTouch(enemies)){
+        tobias.x+= (tobias.velX * -5) //cambiar con valores enemies
+        tobias.y+= (tobias.velY * -5)
+        tobias.velX = -tobias.velX
+        tobias.velY = -tobias.velY
+        tobias.health <= 10
+        // gameOver()
+    }   
 }
 
-function drawEnemies(){
-    enemies.forEach((imageEnem, index) => {
-        if (enemies.x < -60) imageEnem.splice (index,1)
-        enemies.draw()
-    })
+function checkCollisonEnemy(){
+    if(enemies.checkIfTouch(bulletHero)){
+        enemyDies()
+        // gameOver()
+    }   
 }
-function generateBullets (enemies){
-        let bullet = new Bullet(enemies);
-        enemies.bullets.push(bullet);
-        console.log(enemies.bullets);
-      }
-      /*function drawBullets(enemies) {
-        enemies.bullets.forEach(function(b){
-          b.draw();
-          if(hero.isTouching(b)){
-            x = 0
-            gameOver();
-          } 
-          */
-         function generateItems(imageItems) {
-            if (frames % 100 === 0) {
-                if (potionBlue.length >= 5) potionBlue.shift()
-                var y = Math.floor(Math.random() * (500 - 200 + 1)) + 200;
-                potionBlue.push(new imageItem(y, images))
-            }
-        }
 
-        function checkCollision(){
-            enemies.forEach(enemies => {
-                if (hero.checkIfTouch (enemies)){
-                    gameOver()
-                }
-            })
-        }
+function generateEnemy(){
+    if(!(frames%100===0) ) return;
+    let enemX = new Enemy();
+    monster1.push(enemY);
+    enemX.image1.src = imageEnem.index
+    enemX.x = canvas.width -100
+    generateBullet(enemX)
+}
+
+function drawEnemy(){
+        monster1.forEach(function(enemY){
+            enemY.draw();
+}
 
 update()
 //listeners
@@ -348,5 +306,3 @@ addEventListener("keydown", function (e) {
 addEventListener("keyup", function (e) {
     keys[e.keyCode] = false;
 });
-
-
