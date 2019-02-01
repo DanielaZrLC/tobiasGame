@@ -13,7 +13,7 @@
         friction = 0.98,
         keys = [],
         potionBlue = [],
-        // enemies = [],
+        gameStarted = false,
         level = 1,
         maxSize = [],
         monster = [],
@@ -356,9 +356,17 @@
 
 
     //main functions
-    function start (){
-        interval = setInterval (update, 1000/60)
-        bgSound.play()
+    function clearCanvas() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    function start(){
+        console.log("kaca")
+        gameStarted = true;
+        clearCanvas();
+
+        interval = setInterval (update(), 1000/60)
+        backgroundSound.play()
     }
 
     function update(){
@@ -583,7 +591,7 @@
         })
     }
 */
-    update()
+    // update()
     //listeners
 
     addEventListener("keydown", function (e) {
@@ -597,7 +605,9 @@
     window.onload = function(){
 
         document.getElementById('startButton').addEventListener('click', function(){
-            start()
+            if(!gameStarted){
+                start()
+            }
         });
     }
     //     document.getElementById('p2').addEventListener('click', function(){
@@ -605,3 +615,17 @@
     //     });
     
     // }
+
+    if(!gameStarted){
+    intro_screen();
+}
+
+function intro_screen(){
+    ctx.font = "50px Impact";
+	ctx.fillStyle = "#0099CC";
+	ctx.textAlign = "center";
+	ctx.fillText("BlisS Platform", canvas.width/2, canvas.height/2);
+
+	ctx.font = "20px Arial";
+	ctx.fillText("Press Enter To Start", canvas.width/2, canvas.height/2 + 50);
+}
