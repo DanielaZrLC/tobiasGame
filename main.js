@@ -1,7 +1,7 @@
     //canvas
     let canvas = document.getElementById ('myCanvas')
     let ctx = canvas.getContext ('2d')
-    let startButton = canvas.getElementsByClassName("action-button shadow animate startButton")
+
     //globals//
     let health = document.getElementById("health")
 
@@ -20,6 +20,10 @@
         losEnemies = 0
 
     //images
+    let armor = {
+        bulletHero: './Images/bullet.png'
+    }
+
     let imageBoard ={
         bg: "./Images/board1.png",
         logo:"./Images/Logo1.png",
@@ -59,6 +63,19 @@
         { fire1 : "./Images/Fireball1.png", fire2 : "./Images/Fireball2.png", fire3 : "./Images/Fireball3.png"}
     ]
 
+    let sounds = {
+        bgSound: './sounds/back.mp3',
+        monsterDeath: './sounds/monster.mp3'
+    }
+
+
+    let monsterScream = new Audio();
+    monsterScream.src = sounds.monsterDeath
+    let backgroundSound = new Audio();
+    backgroundSound.src = sounds.bgSound
+    backgroundSound.loop = true;
+    backgroundSound.currentTime = 0
+
     //clases
     class Board{
         constructor(){
@@ -80,6 +97,8 @@
             ctx.fillText(Math.floor(frames / 60), this.width -100, 50)
         }
     }
+
+    
  /////////////////////   
     class Stone2{
         constructor(){
@@ -143,6 +162,8 @@
             this.y = (canvas.height - this.height) / 2;
             this.velY= 0;
             this.velX= 0;
+            this.isAlive = true;
+            this.bullets = [];
             this.image = new Image ();
             index = Math.floor(Math.random() * imageHero.length)
             this.image.src = imageHero[index].img1;
@@ -150,9 +171,15 @@
             this.image2.src = imageHero[index].img2;
             this.image3 = new Image();
             this.image3.src = imageHero[index].img3;
-            this.bullets = []
-            this.health = 10;
+            this.health = 100;
         }
+
+        // this.bullets.forEach()
+
+        drawHealth() {
+            ctx.fillStyle = "green"
+            ctx.fillRect(20, 20, this.health * 2, 20)
+          }
         draw(){
             let img = this.which ? this.image:this.image2;
             ctx.drawImage(img,this.x,this.y,this.width,this.height);
@@ -168,8 +195,52 @@
                 this.y < obstacle.y + obstacle.height &&
                 this.y + this.height > obstacle.y
             );
-        }  
+        }
     }
+
+    class Bullet {
+        constructor(character) {
+          this.width = 20;
+          this.height = 20;
+          this.x = character.x + (character.width/2) - (this.width / 2);
+          this.y = character.y //- this.height;
+          this.vX = 2;
+          this.sx = 0;
+          this.sy = 0;
+          this.outOfRange = false
+          this.imagee = new Image();
+          this.imagee.src = armor.bulletHero;
+          this.imagee.onload = function(){
+            this.draw();
+          }.bind(this);
+        }
+    
+        draw() {
+          
+
+          if (frames % 5 === 0) this.sx += 160;
+          if (this.sx === 480) this.sx = 0;
+          this.x -= this.vX;
+          if(this.x < 0){
+              this.outOfRange = true;
+          }
+          ctx.drawImage(
+              this.imagee,
+                this.sx,
+                this.sy,
+                200,
+                200,
+                this.x,
+                this.y,
+                this.width,
+                this.height
+    );
+          
+        // ctx.drawImage(this.imagee,this.x,this.y, this.width, this.height)
+        }
+    
+        
+      }
 
     class Enemy{
         constructor(){
@@ -180,6 +251,7 @@
             this.y = Math.floor(Math.random() * ((canvas.height - this.height) / 3));
             this.velY= 0;
             this.velX= 0;
+            this.index;
             this.image = new Image ();
             index = Math.floor(Math.random() * imageEnem.length)
             this.image.src = imageEnem[index].img1;
@@ -188,6 +260,7 @@
             
         }
         draw(){
+
             let img = this.which ? this.image:this.image2;
             ctx.drawImage(img,this.x,this.y,this.width,this.height);
             if(frames%20===0) this.toggleWhich();
@@ -222,17 +295,7 @@
             this.velY= Math.floor(Math.random() * 3)
         }
     }
-
-    class Bullet {
-        constructor(){
-            this.x= 0
-            this.y = 0
-            this.width = 15
-            this.height = 15
-            this.image = new Image ()
-            this.image.src = imageItems
-        }
-    }
+    
     ////////
     
     class Potion {
@@ -284,7 +347,7 @@
     //instancias
     let fondo = new Board()
     let tobias = new Hero()
-    let enemies = new Enemy()
+    // let enemies = new Enemy()
     let potion = new Potion()
     let bomb = new Bomb()
     let stone = new Stone2()
@@ -294,14 +357,18 @@
 
     //main functions
     function start (){
-        startButton()
         interval = setInterval (update, 1000/60)
+        bgSound.play()
     }
 
     function update(){
         ctx.clearRect(0,0,canvas.width, canvas.height)
         frames++
-
+        
+        
+            
+        
+        // drawBullets(tobias);
         if (keys[38]) {
             if (tobias.velY > -speed) {
                 tobias.velY--;
@@ -324,15 +391,18 @@
         }
         
         // moveEnemy()
-        checkCollisonHero()
-        checkCollisonEnemy()
+        // checkCollisonHero()
+        // checkCollisonEnemy()
         checkCollisonStone()
+        checkAllEnemiesCollisions()
+        hitHealth()
+        
 
         ctx.clearRect(0, 0, 700, 500);
         updatePlayer(tobias);
         generateEnemy()
         drawEnemy()
-        enemies.draw()
+        // enemies.draw()
         potion.draw()
         bomb.draw()
         stone.draw()
@@ -373,39 +443,105 @@
         
         fondo.draw()
         player.draw()
+        player.bullets.forEach(b => {
+            b.draw()
+            if(b.x < canvas.x){
+                player.bullets.pop();
+                console.log(hero.bullets.length)
+            }
+        })
+        player.drawHealth()
+        escucha()
+
+        
     }
 
     // auxiliar functions
-    function checkCollisonHero(){
-        if(tobias.checkIfTouch(enemies)){
-            tobias.x+= (tobias.velX * -5) //cambiar con valores enemies
-            tobias.y+= (tobias.velY * -5)
-            tobias.velX = -tobias.velX
-            tobias.velY = -tobias.velY
-            // gameOver()
+    // function checkCollisonHero(){
+    //     if(tobias.checkIfTouch(enemies)){
+    //         tobias.x+= (tobias.velX * -5) //cambiar con valores enemies
+    //         tobias.y+= (tobias.velY * -5)
+    //         tobias.velX = -tobias.velX
+    //         tobias.velY = -tobias.velY
+    //         // gameOver()
+    //     }   
+    // }
+
+    function generateBullet(hero) {
+        console.log(hero.bullets.length)
+        if(hero.bullets.length == 0){
+            let bullet = new Bullet(hero);
+            hero.bullets.push(bullet);
+        } else if(hero.bullets[0].x < 0){
+            hero.bullets.pop()
+        }
+      }
+    
+    function drawBullets(hero) {
+        hero.bullets.forEach(function(bull){
+            bull.draw();
+            console.log(bull.x)
+            if(bull.x < canvas.x){
+                hero.bullets.pop();
+            }
+        })
+    }
+
+    function hitHealth() {
+        monster.forEach((individual, index) => {
+          if (tobias.checkIfTouch(individual)) {
+            // individual.splice(index, 1)
+            if(tobias.health > 0){
+                tobias.health--
+            }else {
+                gameOver()
+            }
+            
+          }
+        })
+      }
+
+      
+
+    function checkAllEnemiesCollisions(){
+        monster.forEach((individual, index) => {
+            if(individual.checkIfTouch(stone) || individual.checkIfTouch(rock)){
+                individual.x-=2
+                individual.y-=4
+                individual.velX = Math.floor(Math.random() * 15)
+                individual.velY = Math.floor(Math.random() * 15)    
+            } else if(individual.checkIfTouch(tobias.bullets[0]? tobias.bullets[0] : 0)){
+                monsterScream.play()
+                console.log("Soy un monstruo estúpido")
+            }
+        })
+    }
+
+    // function checkCollisonEnemy(){
+    //     if(enemies.checkIfTouch(tobias)){
+    //         tobias.x+= (enemies.velX * -1) //cambiar con valores enemies
+    //         tobias.y+= (enemies.velY * -1)
+    //         tobias.velX = enemies.velX  * -1
+    //         tobias.velY = enemies.velY * -1
+    //         // gameOver()
+    //     }   
+    // }
+////////////////////
+    function checkCollisonStone(){
+        if(tobias.checkIfTouch(stone) || tobias.checkIfTouch(rock)){
+            tobias.x-=2
+            tobias.y-=4
+            tobias.velX = 0
+            tobias.velY = 0
         }   
     }
 
-    function checkCollisonEnemy(){
-        if(enemies.checkIfTouch(tobias)){
-            console.log({hey: enemies.velX, heeh: enemies.velY})
-            tobias.x+= (enemies.velX * -1) //cambiar con valores enemies
-            tobias.y+= (enemies.velY * -1)
-            tobias.velX = enemies.velX  * -1
-            tobias.velY = enemies.velY * -1
-            // gameOver()
-        }   
-    }
-////////////////////
-    function checkCollisonStone(){
-        if(tobias.checkIfTouch(stone)){
-            console.log({hey: tobias.velX, heeh: tobias.velY})
-            stone.x+= (tobias.velX = 0) //cambiar con valores enemies
-            stone.y+= (tobias.velY = 0)
-            stone.velX = tobias.velX  
-            stone.velY = tobias.velY 
-        }   
-    }
+    // function checkCollisonStone(){
+    //     if(tobias.checkIfTouch(rock)){
+    //         tobias.velX = 0
+    //         tobias.velY = 0
+    //     }   
+    // }
  ////////////////////
     function generateEnemy(){
         if(!(frames%100===0)) return 
@@ -419,11 +555,17 @@
 
     function drawEnemy(){
         monster.forEach(function(e, index){
+            e.index = index;
             e.draw();
             e.moveEnemy();
             e.checkCollison(tobias)
             
         })
+    }
+    function escucha(){
+        if (keys[32]) {
+            generateBullet(tobias);
+        }
     }
     /*
     function generatePotion(){
@@ -450,3 +592,16 @@
     addEventListener("keyup", function (e) {
         keys[e.keyCode] = false;
     });
+
+
+    window.onload = function(){
+
+        document.getElementById('startButton').addEventListener('click', function(){
+            start()
+        });
+    }
+    //     document.getElementById('p2').addEventListener('click', function(){
+    //         start(update2)
+    //     });
+    
+    // }
