@@ -17,7 +17,10 @@
         level = 1,
         maxSize = [],
         monster = [],
-        losEnemies = 0
+        losEnemies = 0,
+        MAX_SIZE = 3,
+        MAX_BULLETS = 1
+
 
     //images
     let armor = {
@@ -65,16 +68,22 @@
 
     let sounds = {
         bgSound: './sounds/back.mp3',
-        monsterDeath: './sounds/monster.mp3'
+        monsterDeath: './sounds/monster.mp3',
+        heroDies: './sounds/heroDie.mp3'
     }
 
 
     let monsterScream = new Audio();
     monsterScream.src = sounds.monsterDeath
+    
     let backgroundSound = new Audio();
     backgroundSound.src = sounds.bgSound
     backgroundSound.loop = true;
     backgroundSound.currentTime = 0
+
+    let heroDies = new Audio();
+    heroDies.src = sounds.heroDies;
+
 
     //clases
     class Board{
@@ -83,6 +92,8 @@
             this.y = 0;
             this.width = canvas.width;
             this.height = canvas.height;
+            this.time = 0;
+            this.boardConta = 0
             this.image = new Image();
             this.image.src = imageBoard.bg
             this.image.onload = function(){
@@ -94,7 +105,8 @@
             ctx.drawImage(this.image, this.x,this.y,this.width,this.height);
             ctx.fillStyle = "white";
             ctx.font = '50px Avenir';
-            ctx.fillText(Math.floor(frames / 60), this.width -100, 50)
+            this.time = Math.floor(frames / 60)
+            ctx.fillText(this.time,  this.width -100, 50)
         }
     }
 
@@ -164,6 +176,8 @@
             this.velX= 0;
             this.isAlive = true;
             this.bullets = [];
+            this.enemiesKilled = 0;
+            this.score = 0
             this.image = new Image ();
             index = Math.floor(Math.random() * imageHero.length)
             this.image.src = imageHero[index].img1;
@@ -174,11 +188,17 @@
             this.health = 100;
         }
 
+        toDie(){
+            if(this.health <= 0 ){
+                heroDies.play()
+                gameOver()
+            }
+        }
         // this.bullets.forEach()
 
         drawHealth() {
             ctx.fillStyle = "green"
-            ctx.fillRect(20, 20, this.health * 2, 20)
+            ctx.fillRect(20, 60, this.health * 2, 20)
           }
         draw(){
             let img = this.which ? this.image:this.image2;
@@ -236,7 +256,15 @@
                 this.height
     );
           
-        // ctx.drawImage(this.imagee,this.x,this.y, this.width, this.height)
+        
+        }
+        checkIfTouch(obstacle){
+            return (
+                this.x < obstacle.x + obstacle.width &&
+                this.x + this.width > obstacle.x &&
+                this.y < obstacle.y + obstacle.height &&
+                this.y + this.height > obstacle.y
+            );
         }
     
         
@@ -356,26 +384,38 @@
 
 
     //main functions
+
+    function intro_screen(){
+        
+        ctx.font = "50px Impact";
+        ctx.fillStyle = "#0099CC";
+        ctx.textAlign = "center";
+        ctx.fillText("Tobias is waiting...", canvas.width/2, canvas.height/2);
+    
+        ctx.font = "20px Arial";
+        ctx.fillText("Press The Start Button", canvas.width/2, canvas.height/2 + 50);
+        
+    }
+    intro_screen()
+
     function clearCanvas() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
     }
 
-    function start(){
-        console.log("kaca")
-        gameStarted = true;
-        clearCanvas();
 
-        interval = setInterval (update(), 1000/60)
+    function start(){
+        gameStarted = true;
+        
+         interval = setInterval (
+            update()
+        , 1000/60)
         backgroundSound.play()
     }
+
 
     function update(){
         ctx.clearRect(0,0,canvas.width, canvas.height)
         frames++
-        
-        
-            
-        
         // drawBullets(tobias);
         if (keys[38]) {
             if (tobias.velY > -speed) {
@@ -406,7 +446,7 @@
         hitHealth()
         
 
-        ctx.clearRect(0, 0, 700, 500);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
         updatePlayer(tobias);
         generateEnemy()
         drawEnemy()
@@ -417,21 +457,29 @@
         goods.draw()
         rock. draw()
         
+
+        
         setTimeout(update, 10);
     }
 
     function gameOver(){
-
         clearInterval(interval)
-        // clearCanvas()
+        fondo.boardConta = fondo.time
+        backgroundSound.currentTime = 0
+        tobias.score = fondo.boardConta + tobias.enemiesKilled
+        backgroundSound.pause() 
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        clearCanvas()
         ctx.font = "VT323 150px"
         ctx.fillStyle = "black"
         ctx.fillText ("GAME OVER", 380,300)
-        ctx.fillText ("Press enter to restart", 380,400)
+        ctx.fillText ("Tu score es" + tobias.score, 380,400)
     }
+    
 
     //
     function updatePlayer(player) {
+        
         player.velY *= friction;
         player.y += player.velY;
         player.velX *= friction;
@@ -459,25 +507,13 @@
             }
         })
         player.drawHealth()
-        escucha()
-
-        
+        player.toDie()
+        escucha()   
     }
-
-    // auxiliar functions
-    // function checkCollisonHero(){
-    //     if(tobias.checkIfTouch(enemies)){
-    //         tobias.x+= (tobias.velX * -5) //cambiar con valores enemies
-    //         tobias.y+= (tobias.velY * -5)
-    //         tobias.velX = -tobias.velX
-    //         tobias.velY = -tobias.velY
-    //         // gameOver()
-    //     }   
-    // }
 
     function generateBullet(hero) {
         console.log(hero.bullets.length)
-        if(hero.bullets.length == 0){
+        if(hero.bullets.length < MAX_BULLETS){
             let bullet = new Bullet(hero);
             hero.bullets.push(bullet);
         } else if(hero.bullets[0].x < 0){
@@ -519,21 +555,32 @@
                 individual.velX = Math.floor(Math.random() * 15)
                 individual.velY = Math.floor(Math.random() * 15)    
             } else if(individual.checkIfTouch(tobias.bullets[0]? tobias.bullets[0] : 0)){
+                let bala = tobias.bullets
+                console.log(bala)
                 monsterScream.play()
+                monster.splice(index, 1)
+                
+                if(bala[0].checkIfTouch(individual)){
+                    tobias.enemiesKilled++
+                    bala.pop();
+                    // MAX_BULLETS++
+                }
+                // bala[0].forEach((elem, index) =>{
+                //     if(elem.checkIfTouch(individual)){
+                //         bala.splice(index, 1)
+                //     }
+                // })
+                losEnemies--;
+                MAX_SIZE*=1.5;
                 console.log("Soy un monstruo estúpido")
             }
         })
     }
 
-    // function checkCollisonEnemy(){
-    //     if(enemies.checkIfTouch(tobias)){
-    //         tobias.x+= (enemies.velX * -1) //cambiar con valores enemies
-    //         tobias.y+= (enemies.velY * -1)
-    //         tobias.velX = enemies.velX  * -1
-    //         tobias.velY = enemies.velY * -1
-    //         // gameOver()
-    //     }   
+    // function checkBulletCollision(){
+    //     if(tobias.bullets[0].checkIfTouch(monsters.forEach(indivudual)))
     // }
+    
 ////////////////////
     function checkCollisonStone(){
         if(tobias.checkIfTouch(stone) || tobias.checkIfTouch(rock)){
@@ -544,16 +591,11 @@
         }   
     }
 
-    // function checkCollisonStone(){
-    //     if(tobias.checkIfTouch(rock)){
-    //         tobias.velX = 0
-    //         tobias.velY = 0
-    //     }   
-    // }
  ////////////////////
+
     function generateEnemy(){
         if(!(frames%100===0)) return 
-        if(losEnemies < 3){
+        if(losEnemies < MAX_SIZE){
         losEnemies++
             console.log("Generé uno marica")
             let enemike = new Enemy();
@@ -574,23 +616,7 @@
         if (keys[32]) {
             generateBullet(tobias);
         }
-    }
-    /*
-    function generatePotion(){
-        if (!(frames % 100 === 0)) return
-        if (thePotion = 0){
-            thePotion++
-            let potion = new Potion ()
-            potionBlue.push()
-        }
-    }
-    function drawPotion (){
-        potion.forEach (function(x){
-            x.draw();
-            x.checkCollison(tobias)
-        })
-    }
-*/
+    } 
     // update()
     //listeners
 
@@ -610,22 +636,6 @@
             }
         });
     }
-    //     document.getElementById('p2').addEventListener('click', function(){
-    //         start(update2)
-    //     });
+
     
-    // }
 
-    if(!gameStarted){
-    intro_screen();
-}
-
-function intro_screen(){
-    ctx.font = "50px Impact";
-	ctx.fillStyle = "#0099CC";
-	ctx.textAlign = "center";
-	ctx.fillText("BlisS Platform", canvas.width/2, canvas.height/2);
-
-	ctx.font = "20px Arial";
-	ctx.fillText("Press Enter To Start", canvas.width/2, canvas.height/2 + 50);
-}
