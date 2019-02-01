@@ -12,7 +12,7 @@
         speed = 2,
         friction = 0.98,
         keys = [],
-        potionblue = [],
+        potionBlue = [],
         // enemies = [],
         level = 1,
         maxSize = [],
@@ -45,12 +45,13 @@
         {img1 : "./Images/Hero1.png", img2:"./Images/Hero2.png",img3:"./Images/Hero3.png"}
     ]
     let imageItems = {
-        goodAction1:"./Images/Good1.png",
-        goodAction2:"./Images/Good2.png",
         potionBlue:"./Images/BluePotion.png",
         potionRed:"./Images/RedPotion.png",
         bomb:"./Images/Bomb.png",
     }
+    let good =  {
+        goodAction:"./Images/Good1.png",
+}
     let heroBullets = [
         { blueFire1 : "./Images/BlueFireball1.png", blueFire2 : "./Images/BlueFireball2.png", blueFire3 : "./Images/BlueFireball3.png" }
     ]    
@@ -79,10 +80,10 @@
             ctx.fillText(Math.floor(frames / 60), this.width -100, 50)
         }
     }
-    
+ /////////////////////   
     class Stone2{
         constructor(){
-            this.x = 500;
+            this.x = 530;
             this.y = 350;
             this.width = 50;
             this.height = 50;
@@ -96,15 +97,42 @@
         draw() {
             ctx.drawImage(this.image, this.x,this.y,this.width,this.height)
         }
-        checkCollison(hero) {
+
+        checkCollisonStone(hero) {
             if(this.checkIfTouch(hero)){
-                hero.x+= (this.velX * -.5) //cambiar con valores enemies
-                hero.y+= (this.velY * -.5)
-                hero.velX = this.velX  * -.1
-                hero.velY = this.velY * -.1
+                hero.x+= (this.velX * -3) //cambiar con valores enemies
+                hero.y+= (this.velY * -3)
+                hero.velX = (this.velX  * -1)
+                hero.velY = (this.velY * -1)
             }
         }
     }
+    class Stone3{
+        constructor(){
+            this.x = 80;
+            this.y = 350;
+            this.width = 50;
+            this.height = 50;
+            this.image = new Image ();
+            this.image.src = imageSets.stone3
+            this.image.onload = function(){
+                this.draw();
+
+            }.bind(this)
+        }
+        draw() {
+            ctx.drawImage(this.image, this.x,this.y,this.width,this.height)
+        }
+        checkCollisonStone(hero) {
+            if(this.checkIfTouch(hero)){
+                hero.x+= (this.velX * -3) //cambiar con valores enemies
+                hero.y+= (this.velY * -3)
+                hero.velX = (this.velX  * -1)
+                hero.velY = (this.velY * -1)
+            }
+        }
+    }
+    ////////////////
 
     class Hero{
         constructor(){
@@ -116,13 +144,13 @@
             this.velY= 0;
             this.velX= 0;
             this.image = new Image ();
-            this.health = 100;
             index = Math.floor(Math.random() * imageHero.length)
             this.image.src = imageHero[index].img1;
             this.image2 = new Image();
             this.image2.src = imageHero[index].img2;
             this.image3 = new Image();
             this.image3.src = imageHero[index].img3;
+            this.bullets = []
             this.health = 10;
         }
         draw(){
@@ -157,7 +185,7 @@
             this.image.src = imageEnem[index].img1;
             this.image2 = new Image();
             this.image2.src = imageEnem[index].img2;
-            this.bullets = []
+            
         }
         draw(){
             let img = this.which ? this.image:this.image2;
@@ -176,8 +204,7 @@
                 this.y + this.height > obstacle.y
             );
         }
-        
-        
+           
         checkCollison(hero) {
             if(this.checkIfTouch(hero)){
                 hero.x+= (this.velX * -3) //cambiar con valores enemies
@@ -206,7 +233,8 @@
             this.image.src = imageItems
         }
     }
-
+    ////////
+    
     class Potion {
         constructor(){
             this.x = canvas.width / 2;
@@ -218,11 +246,12 @@
             this.image.onload = this.draw.bind(this)
         }
         draw(){
-            //abajo
-            //if (this.y < canvas.height-this.height) this.y +=2
-            ctx.drawImage(this.image, this.x, this.y, this.width, this.height)
+            let img = this.image
+            ctx.drawImage(img,this.x,this.y,this.width,this.height);
         }
-        }
+    }
+
+
         class Bomb {
             constructor(){
                 this.x = 200;
@@ -234,13 +263,23 @@
                 this.image.onload = this.draw.bind(this)
             }
             draw(){
-                //abajo
-                //if (this.y < canvas.height-this.height) this.y +=2
                 ctx.drawImage(this.image, this.x, this.y, this.width, this.height)
             }
             }
-        
-
+        class File {
+            constructor (){
+            this.x = 200;
+            this.y = 200;
+            this.width = 25;
+            this.height = 25;
+            this.image = new Image()
+            this.image.src = good.goodAction
+            this.image.onload = this.draw.bind(this)
+            }
+            draw(){
+                ctx.drawImage(this.image, this.x, this.y, this.width, this.height)
+        }
+        }
 
     //instancias
     let fondo = new Board()
@@ -249,7 +288,8 @@
     let potion = new Potion()
     let bomb = new Bomb()
     let stone = new Stone2()
-
+    let rock = new Stone3()
+    let goods = new File()
 
 
     //main functions
@@ -283,11 +323,10 @@
             }
         }
         
-        
-
         // moveEnemy()
         checkCollisonHero()
         checkCollisonEnemy()
+        checkCollisonStone()
 
         ctx.clearRect(0, 0, 700, 500);
         updatePlayer(tobias);
@@ -297,6 +336,8 @@
         potion.draw()
         bomb.draw()
         stone.draw()
+        goods.draw()
+        rock. draw()
         
         setTimeout(update, 10);
     }
@@ -310,8 +351,6 @@
         ctx.fillText ("GAME OVER", 380,300)
         ctx.fillText ("Press enter to restart", 380,400)
     }
-
-
 
     //
     function updatePlayer(player) {
@@ -334,8 +373,6 @@
         
         fondo.draw()
         player.draw()
-        
-
     }
 
     // auxiliar functions
@@ -359,7 +396,17 @@
             // gameOver()
         }   
     }
- 
+////////////////////
+    function checkCollisonStone(){
+        if(tobias.checkIfTouch(stone)){
+            console.log({hey: tobias.velX, heeh: tobias.velY})
+            stone.x+= (tobias.velX = 0) //cambiar con valores enemies
+            stone.y+= (tobias.velY = 0)
+            stone.velX = tobias.velX  
+            stone.velY = tobias.velY 
+        }   
+    }
+ ////////////////////
     function generateEnemy(){
         if(!(frames%100===0)) return 
         if(losEnemies < 3){
@@ -378,8 +425,22 @@
             
         })
     }
-
-
+    /*
+    function generatePotion(){
+        if (!(frames % 100 === 0)) return
+        if (thePotion = 0){
+            thePotion++
+            let potion = new Potion ()
+            potionBlue.push()
+        }
+    }
+    function drawPotion (){
+        potion.forEach (function(x){
+            x.draw();
+            x.checkCollison(tobias)
+        })
+    }
+*/
     update()
     //listeners
 
