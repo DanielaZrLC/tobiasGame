@@ -1,3 +1,4 @@
+    
     //canvas
     let canvas = document.getElementById ('myCanvas')
     let ctx = canvas.getContext ('2d')
@@ -17,8 +18,11 @@
         level = 1,
         maxSize = [],
         monster = [],
+        
         losEnemies = 0,
+        losFiles = 0,
         MAX_SIZE = 3,
+        MAX_FILES = 4,
         MAX_BULLETS = 1
 
 
@@ -176,8 +180,10 @@
             this.velX= 0;
             this.isAlive = true;
             this.bullets = [];
+            this.files = []
             this.enemiesKilled = 0;
-            this.score = 0
+            this.score = 0;
+            this.pointsForFiles = 0;
             this.image = new Image ();
             index = Math.floor(Math.random() * imageHero.length)
             this.image.src = imageHero[index].img1;
@@ -359,8 +365,8 @@
             }
         class File {
             constructor (){
-            this.x = 200;
-            this.y = 200;
+            this.x = Math.floor(Math.random() * canvas.width);
+            this.y = Math.floor(Math.random() * canvas.height);
             this.width = 25;
             this.height = 25;
             this.image = new Image()
@@ -441,9 +447,12 @@
         // moveEnemy()
         // checkCollisonHero()
         // checkCollisonEnemy()
+        generateFile()
+        // drawFile()
         checkCollisonStone()
         checkAllEnemiesCollisions()
         hitHealth()
+        takePotion()
         
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -451,10 +460,8 @@
         generateEnemy()
         drawEnemy()
         // enemies.draw()
-        potion.draw()
-        bomb.draw()
         stone.draw()
-        goods.draw()
+        // goods.draw()
         rock. draw()
         
 
@@ -466,17 +473,20 @@
         clearInterval(interval)
         fondo.boardConta = fondo.time
         backgroundSound.currentTime = 0
-        tobias.score = fondo.boardConta + tobias.enemiesKilled
+        console.log(fondo.board)
+        console.log(tobias.enemiesKilled)
+        console.log(tobias.pointsForFiles)
+        tobias.score = fondo.boardConta + tobias.enemiesKilled + tobias.pointsForFiles
         backgroundSound.pause() 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         clearCanvas()
         ctx.font = "VT323 150px"
         ctx.fillStyle = "black"
         ctx.fillText ("GAME OVER", 380,300)
-        ctx.fillText ("Tu score es" + tobias.score, 380,400)
+        ctx.fillText ("Tu score es " + tobias.score, 380,400)
     }
     
-
+//parseInt()
     //
     function updatePlayer(player) {
         
@@ -508,7 +518,12 @@
         })
         player.drawHealth()
         player.toDie()
+        player.files.forEach((m, index) => {
+            m.draw()
+            checkCollisonFile(m, index);
+        })
         escucha()   
+
     }
 
     function generateBullet(hero) {
@@ -530,6 +545,16 @@
             }
         })
     }
+//
+    function takePotion(){ 
+        if (tobias.checkIfTouch(potion)){
+            if (tobias.health < 10){
+                tobias.health ++
+            }
+        }else if (tobias.checkIfTouch(potion)){
+            potion.splice()
+        }
+    }
 
     function hitHealth() {
         monster.forEach((individual, index) => {
@@ -544,8 +569,6 @@
           }
         })
       }
-
-      
 
     function checkAllEnemiesCollisions(){
         monster.forEach((individual, index) => {
@@ -577,11 +600,36 @@
         })
     }
 
+    function generateFile(){
+        if(!(frames%150===0)) return 
+        if(losFiles < MAX_FILES){
+            losFiles++
+            console.log("Generé un pinche file ALV")
+            let leFile = new File();
+            tobias.files.push(leFile);
+}
+
+    }
+
+    // function drawFile() {
+    //     files.forEach(function(e, index){
+    //         e.index = index;
+    //         checkCollisonFile(e, index)
+            
+            
+    //     })
+    // }
+function checkCollisonFile(conQuien, cual){
+    if (tobias.checkIfTouch(conQuien)){
+        tobias.pointsForFiles+=100;
+        tobias.files.splice(cual, 1)
+    }
+    
+}
     // function checkBulletCollision(){
     //     if(tobias.bullets[0].checkIfTouch(monsters.forEach(indivudual)))
     // }
     
-////////////////////
     function checkCollisonStone(){
         if(tobias.checkIfTouch(stone) || tobias.checkIfTouch(rock)){
             tobias.x-=2
@@ -590,8 +638,6 @@
             tobias.velY = 0
         }   
     }
-
- ////////////////////
 
     function generateEnemy(){
         if(!(frames%100===0)) return 
